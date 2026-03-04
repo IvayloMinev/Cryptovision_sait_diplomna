@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CryptoVision — Крипто Анализатор</title>
+
+  <!-- Chart.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ── TICKER TAPE ── -->
+  <div class="ticker">
+    <div class="ticker-track" id="tickerTrack">
+      <span style="font-family:'JetBrains Mono';font-size:.72rem;color:var(--dim);padding:0 2rem">Зареждане на данни…</span>
+    </div>
+  </div>
+
+  <!-- ── HEADER ── -->
+  <header>
+    <div class="logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+      </svg>
+      Crypto<em>Vision</em>
+    </div>
+
+    <nav id="mainNav">
+      <button class="active" onclick="nav(this,'market')">📊 Пазар</button>
+      <button onclick="nav(this,'charts')">📈 Графики</button>
+      <button onclick="nav(this,'news')">📰 Новини</button>
+      <button onclick="nav(this,'portfolio')">💼 Портфолио</button>
+    </nav>
+
+    <div class="hdr-btc">
+      <span class="lbl">Bitcoin</span>
+      <span id="hBtc" class="pos">—</span>
+    </div>
+  </header>
+
+  <!-- ── MAIN ── -->
+  <main>
+
+    <!-- MARKET -->
+    <section id="sec-market" class="sec active">
+      <div class="stats-bar">
+        <div class="stat-card">
+          <div class="stat-lbl">Пазарна капитализация</div>
+          <div class="stat-val" id="sMktCap">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-lbl">24ч. обем</div>
+          <div class="stat-val" id="sVol">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-lbl">BTC доминация</div>
+          <div class="stat-val" id="sBtcDom">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-lbl">Активни крипти</div>
+          <div class="stat-val" id="sActive">—</div>
+        </div>
+      </div>
+
+      <div class="search-wrap">
+        <input class="search-input" id="searchInput" type="text"
+               placeholder="🔍  Търси по име или символ…" oninput="filterCoins()">
+      </div>
+
+      <div class="card" id="marketWrap">
+        <div class="loading"><div class="spin"></div> Зареждане на пазарни данни…</div>
+      </div>
+    </section>
+
+    <!-- CHARTS -->
+    <section id="sec-charts" class="sec">
+      <div class="card">
+        <div class="chart-controls">
+          <select class="coin-sel" id="coinSel" onchange="loadChart()">
+            <option value="">— Избери криптовалута —</option>
+          </select>
+          <div class="tf-group">
+            <button class="tf-btn active" onclick="setTF(this,'1')">1Д</button>
+            <button class="tf-btn"        onclick="setTF(this,'7')">7Д</button>
+            <button class="tf-btn"        onclick="setTF(this,'30')">1М</button>
+            <button class="tf-btn"        onclick="setTF(this,'90')">3М</button>
+            <button class="tf-btn"        onclick="setTF(this,'365')">1Г</button>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="priceChart"></canvas>
+        </div>
+        <div class="chart-stats">
+          <div class="cs-item"><div class="lbl">Текуща цена</div><div class="val" id="csPrice">—</div></div>
+          <div class="cs-item"><div class="lbl">Промяна</div><div class="val" id="csChg">—</div></div>
+          <div class="cs-item"><div class="lbl">Максимум</div><div class="val" id="csHigh">—</div></div>
+          <div class="cs-item"><div class="lbl">Минимум</div><div class="val" id="csLow">—</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- NEWS -->
+    <section id="sec-news" class="sec">
+      <h2 class="sec-title">Крипто <em>Новини</em></h2>
+      <div id="newsWrap">
+        <div class="loading"><div class="spin"></div> Зареждане на новини…</div>
+      </div>
+    </section>
+
+    <!-- PORTFOLIO -->
+    <section id="sec-portfolio" class="sec">
+      <div class="pf-layout">
+        <div>
+          <div class="pf-summary">
+            <div class="stat-lbl" style="margin-bottom:.4rem">Обща стойност на портфолиото</div>
+            <div class="pf-total" id="pfTotal">$0.00</div>
+            <div class="pf-pnl" id="pfPnl"></div>
+          </div>
+          <div class="card" id="pfWrap">
+            <div class="empty">
+              <div class="ico">💼</div>
+              <div>Добави крипти вдясно, за да следиш портфолиото си</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="add-form">
+          <div class="add-form-title">+ Добави позиция</div>
+          <div class="fg">
+            <label>Криптовалута</label>
+            <select id="pfCoin"><option value="">— Избери —</option></select>
+          </div>
+          <div class="fg">
+            <label>Количество</label>
+            <input type="number" id="pfAmt" placeholder="0.00" step="any" min="0">
+          </div>
+          <div class="fg">
+            <label>Средна покупна цена ($)</label>
+            <input type="number" id="pfBuy" placeholder="0.00" step="any" min="0">
+          </div>
+          <button class="btn-add" onclick="addHolding()">Добави към портфолиото</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Scripts — редът е важен! -->
+  <script src="js/utils.js"></script>
+  <script src="js/market.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/news.js"></script>
+  <script src="js/portfolio.js"></script>
+  <script src="js/main.js"></script>
+
+</body>
+</html>
